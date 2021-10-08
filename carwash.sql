@@ -1,81 +1,105 @@
-CREATE DATABASE  IF NOT EXISTS `carwash`
-USE `carwash`;
-------------------------
--- ORACLE SQL
---------------------------
+-- MySQL Workbench Forward Engineering
+
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
+
+-- -----------------------------------------------------
+-- Schema carwash
+-- -----------------------------------------------------
+DROP SCHEMA IF EXISTS `carwash` ;
+
+-- -----------------------------------------------------
+-- Schema carwash
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `carwash` DEFAULT CHARACTER SET utf8 ;
+USE `carwash` ;
+
 -- -----------------------------------------------------
 -- Table `carwash`.`empleados`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS carwash.empleados ;
+DROP TABLE IF EXISTS `carwash`.`empleados` ;
 
-CREATE TABLE IF NOT EXISTS carwash.empleados (
-  idempleado number primary key,
-  nombre_emp VARCHAR2(150),
-  legajo number);
+CREATE TABLE IF NOT EXISTS `carwash`.`empleados` (
+  `idempleado` INT NOT NULL AUTO_INCREMENT,
+  `nombre_emp` VARCHAR(150) NOT NULL,
+  `legajo` INT NOT NULL,
+  PRIMARY KEY (`idempleado`))
+ENGINE = InnoDB;
 
-INSERT INTO `empleados` VALUES(1,'Hombre Topo',123);
-INSERT INTO `empleados` VALUES(2,'Renzo Fajardo',321);
+CREATE UNIQUE INDEX `legajo_UNIQUE` ON `carwash`.`empleados` (`legajo` ASC);
+
 
 -- -----------------------------------------------------
 -- Table `carwash`.`clientes`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS carwash.clientes ;
+DROP TABLE IF EXISTS `carwash`.`clientes` ;
 
-CREATE TABLE IF NOT EXISTS carwash.clientes (
-  idcliente number primary key,
-  nombre_cli VARCHAR2(450),
-  domicilio VARCHAR2(250),
-  barrio VARCHAR2(250),
-  documento VARCHAR2(15)
-  );
+CREATE TABLE IF NOT EXISTS `carwash`.`clientes` (
+  `idcliente` INT NOT NULL AUTO_INCREMENT,
+  `nombre_cli` VARCHAR(450) NOT NULL,
+  `domicilio` VARCHAR(250) NULL,
+  `barrio` VARCHAR(250) NULL,
+  `documento` VARCHAR(15) NOT NULL,
+  PRIMARY KEY (`idcliente`))
+ENGINE = InnoDB;
 
-INSERT INTO `clientes` VALUES(1,'Franco Cardozo','Lejos de Chilecito','Anguinan','12345678');
-INSERT INTO `clientes` VALUES(2,'Fabian Roldan','Donde no hay internet','Malligasta','87654321');
+CREATE UNIQUE INDEX `documento_UNIQUE` ON `carwash`.`clientes` (`documento` ASC);
+
 
 -- -----------------------------------------------------
 -- Table `carwash`.`vehiculos`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS carwash.vehiculos ;
+DROP TABLE IF EXISTS `carwash`.`vehiculos` ;
 
-CREATE TABLE IF NOT EXISTS carwash.vehiculos (
-  idvehiculo number primary key,
-  matricula VARCHAR2(45),
-  marca VARCHAR2(425),
-  modelo VARCHAR2(425),
-  idcliente number
-    );
+CREATE TABLE IF NOT EXISTS `carwash`.`vehiculos` (
+  `idvehiculo` INT NOT NULL AUTO_INCREMENT,
+  `matricula` VARCHAR(45) NOT NULL,
+  `marca` VARCHAR(425) NULL,
+  `modelo` VARCHAR(425) NULL,
+  `idcliente` INT NULL,
+  PRIMARY KEY (`idvehiculo`),
+  CONSTRAINT `vehi_cli_fk`
+    FOREIGN KEY (`idcliente`)
+    REFERENCES `carwash`.`clientes` (`idcliente`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 
-alter table carwash.vehiculos 
-add CONSTRAINT vehi_cli_fk
-    FOREIGN KEY (idcliente)
-    REFERENCES carwash.clientes (idcliente);
+CREATE UNIQUE INDEX `matricula_UNIQUE` ON `carwash`.`vehiculos` (`matricula` ASC);
 
-INSERT INTO `vehiculos` VALUES(1,'123ACB','Peugeot','208',1);
-INSERT INTO `vehiculos` VALUES(2,'456BCA','Dodge','Challenger',2);
+CREATE INDEX `vehi_cli_fk_idx` ON `carwash`.`vehiculos` (`idcliente` ASC);
+
 
 -- -----------------------------------------------------
 -- Table `carwash`.`turnos`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS carwash.turnos ;
+DROP TABLE IF EXISTS `carwash`.`turnos` ;
 
-CREATE TABLE IF NOT EXISTS carwash.turnos (
-  idturno number primary key,
-  idvehiculo number,
-  fecha DATETIME,
-  idempleado number,
-  precio number(5,2)
-);
+CREATE TABLE IF NOT EXISTS `carwash`.`turnos` (
+  `idturno` INT NOT NULL AUTO_INCREMENT,
+  `idvehiculo` INT NOT NULL,
+  `fecha` DATETIME NULL,
+  `idempleado` INT NOT NULL,
+  `precio` DECIMAL(5,2) NULL,
+  PRIMARY KEY (`idturno`),
+  CONSTRAINT `idvehi_turno_fk`
+    FOREIGN KEY (`idvehiculo`)
+    REFERENCES `carwash`.`vehiculos` (`idvehiculo`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `idemp_turno_fk`
+    FOREIGN KEY (`idempleado`)
+    REFERENCES `carwash`.`empleados` (`idempleado`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 
-alter table carwash.turnos
-add  CONSTRAINT idvehi_turno_fk
-    FOREIGN KEY (idvehiculo)
-    REFERENCES carwash.vehiculos (idvehiculo);
+CREATE INDEX `idvehi_turno_fk_idx` ON `carwash`.`turnos` (`idvehiculo` ASC);
 
-  alter table carwash.turnos
-add CONSTRAINT idemp_turno_fk
-    FOREIGN KEY (idempleado)
-    REFERENCES carwash.empleados (idempleado);
+CREATE INDEX `idemp_turno_fk_idx` ON `carwash`.`turnos` (`idempleado` ASC);
 
-INSERT INTO `turnos` VALUES(1,1,'10-10-2021',2,123.15);
-INSERT INTO `turnos` VALUES(2,2,'15-10-2021',1,1564);
-commit;
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
